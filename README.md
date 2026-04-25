@@ -1,0 +1,201 @@
+---
+title: "Descriptive Analysis of Diarrhea Epidemiology in Bojonegoro Regency in 2024"
+output:
+  html_document:
+    css: filevisual.css
+    theme: null
+---
+  
+```{r, message=FALSE, warning=FALSE}
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(openxlsx)
+library(tidyverse)
+library(tidyr)
+library(scales)
+```
+
+
+## STEP 1 IDENTIFIKASI DATA
+
+Data yang digunakan dalam penelitian ini merupakan data sekunder yang diperoleh dari publikasi resmi Dinas Kesehatan Kabupaten Bojonegoro pada tahun 2024 [1]. Data tersebut disajikan pada tingkat kecamatan, dengan total sebanyak 28 kecamatan.
+
+Variabel yang digunakan dalam penelitian ini meliputi:
+
+1. Jumlah penduduk
+
+2. Jumlah kasus diare
+
+3. Jumlah kasus diare yang mendapatkan pelayanan kesehatan 
+
+Variabel pelayanan kesehatan selanjutnya diklasifikasikan berdasarkan kelompok umur, yaitu semua umur dan Balita (anak usia di bawah lima tahun)[2]. Data ini digunakan untuk menggambarkan kondisi epidemiologi diare di Kabupaten Bojonegoro.
+
+### Input Data
+
+```{r, echo = TRUE}
+# 1. Import Data
+datadiare<- read_excel("C:/Users/asus/Downloads/data_rapih(2).xlsx", sheet = 1)
+datadiare
+
+# 2. Cek Struktur Data 
+str(datadiare)
+names(datadiare)
+
+# 3. Rename Kolom Pada Data
+datadiare <- datadiare %>%
+  rename(
+    Kecamatan = Kecamatan,
+    Penduduk = JumlahPenduduk,
+    Diseases = Diseases,
+    Target_Semua = `JUMLAH TARGET PENEMUAN (SEMUA UMUR)`,
+    Target_Balita = `JUMLAH TARGET PENEMUAN (BALITA)`,
+    Dilayani_Semua = `DILAYANI SEMUA UMUR (JUMLAH)`,
+    Dilayani_Balita = `DILAYANI BALITA (JUMLAH)`
+  )
+```
+
+```{r, echo=TRUE}
+# 4. Statistik Deskriptif 
+summary(datadiare$Diseases)
+sd(datadiare$Diseases)
+```
+
+Interpretasi : 
+
+Berdasarkan hasil analisis deskriptif, jumlah kasus diare memiliki nilai rata-rata sebesar 466,7 kasus per kecamatan, dengan nilai minimum 71 kasus dan maksimum 877 kasus. Nilai median (466) yang hampir sama dengan mean menunjukkan bahwa distribusi data relatif simetris, meskipun masih terdapat variasi yang cukup besar antar wilayah.Hal ini diperkuat oleh nilai standar deviasi sebesar 213,59 yang menunjukkan bahwa penyebaran kasus diare antar kecamatan cukup tinggi, sehingga terdapat perbedaan beban penyakit yang signifikan di setiap wilayah.
+
+
+### ANALISIS EPIDEMIOLOGI
+
+```{r, echo=TRUE}
+# 5. Perhitungan Kasus Penyakit
+## Menghitung rate dan proporsi
+datadiare <- datadiare %>%
+  mutate(
+    # Angka kesakitan per 1000 penduduk
+    rate = (Diseases / Penduduk) * 1000,
+    
+    # Proporsi balita
+    prop_balita = (Dilayani_Balita / Dilayani_Semua) * 100
+  )
+
+
+## Menghitung period prevalence
+datadiare <- datadiare %>%
+  mutate(
+    
+    # Period Prevalence
+    period_prevalence = (Diseases / Penduduk) 
+  )
+
+hasil_epi <- datadiare %>%
+  select(
+    Kecamatan,
+    Diseases,
+    Penduduk,
+    rate,
+    prop_balita,
+    period_prevalence
+  )
+print(hasil_epi, n = 28)
+```
+
+Interpretasi : 
+
+Berdasarkan hasil_epi bisa dilihat bahwa beberapa kecamatan seperti Kedewan, Ngambon, dan Margomulyo memiliki nilai rate dan period prevalence yang tinggi, meskipun jumlah penduduknya relatif lebih kecil. Sebaliknya, kecamatan dengan jumlah penduduk besar tidak selalu memiliki tingkat kejadian tertinggi. Hal ini menunjukkan bahwa risiko diare tidak hanya dipengaruhi oleh ukuran populasi. Selain itu, terdapat kecamatan seperti Temayang yang memiliki nilai prevalensi sangat rendah, mengindikasikan adanya perbedaan kondisi lingkungan atau akses layanan kesehatan yang signifikan antar wilayah. Variabel proporsi balita (prop_balita) juga menunjukkan variasi, yang dapat menjadi indikator penting mengingat kelompok balita, dikarenakan balita adalah populasi yang lebih rentan terhadap penyakit diare. Secara keseluruhan, pola ini mengindikasikan bahwa kejadian diare dipengaruhi oleh faktor yang kompleks (multifaktorial), seperti sanitasi, akses air bersih, dan perilaku hidup bersih dan sehat, sehingga diperlukan pendekatan berbasis wilayah (spatial-based approach) dalam analisis dan intervensi.
+
+### VISUALISASI DATA
+
+```{r, echo=TRUE}
+## DIAGRAM BATANG
+ggplot(datadiare, aes(x = reorder(Kecamatan, Diseases), 
+                       y = Diseases, 
+                       fill = Diseases)) +
+  geom_col() +
+  geom_text(aes(label = Diseases), 
+            hjust = -0.1, size = 3) +
+  coord_flip() +
+  
+  # warna dari rendah ke tinggi
+  scale_fill_gradient(
+    low = "#85C1E9",   # biru muda (rendah)
+    high = "#1B4F72"   # biru tua (tinggi)
+  ) +
+  
+  labs(title = "Number of Diarrhea Cases per Subdistrict",
+       x = "Subdistrict",
+       y = "Number of Cases") +
+  
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.y = element_text(size = 8)
+  ) +
+  
+  # biar angka ga kepotong
+  expand_limits(y = max(datadiare$Diseases) * 1.1)
+```
+
+Interpretasi : 
+
+Visualisasi diatas menunjukkan bahwa secara umum terlihat adanya ketimpangann antar kecamatan. Kecamatan Kedungadem mencatat jumlah kasus tertinggi yaitu 877 kasus, diikuti oleh Malo (873 kasus) dan Ngasem (751 kasus). Tingginya jumlah kasus di wilayah-wilayah ini menunjukkan bahwa kecamatan tersebut memiliki beban epidemiologis yang lebih besar, sehingga berpotensi membutuhkan perhatian dan intervensi kesehatan yang lebih intensif. Sebaliknya, jumlah kasus terendah tercatat di kecamatan Bubulan (171 kasus). Rendahnya jumlah kasus di wilayah ini dapat disebabkan oleh beberapa faktor, seperti kondisi lingkungan yang lebih baik, jumlah penduduk yang lebih sedikit, atau kemungkinan perbedaan dalam pelaporan kasus. Perbedaan jumlah kasus ini menunjukkan bahwa distribusi penyakit diare tidak bersifat homogen, melainkan terkonsentrasi pada wilayah-wilayah tertentu. 
+
+```{r, echo=TRUE}
+## PIE CHART
+pie_data <- datadiare %>%
+  summarise(
+    "All Ages" = sum(Dilayani_Semua),
+    "Children Under Five" = sum(Dilayani_Balita)
+  ) %>%
+  pivot_longer(cols = everything(),
+               names_to = "Category",
+               values_to = "Jumlah") %>%
+  mutate(
+    prop = Jumlah / sum(Jumlah),
+    label = paste0(Category, "\n", percent(prop, accuracy = 0.1))
+  )
+# pie chart
+ggplot(pie_data, aes(x = "", y = Jumlah, fill = Category)) +
+  geom_col(width = 1, color = "black", size = 0.7) +
+  coord_polar(theta = "y") +
+  
+  # label di tengah
+  geom_text(aes(label = label),
+            position = position_stack(vjust = 0.7),
+            size = 4, color = "black") +
+  
+  # warna jurnal (clean & profesional)
+  scale_fill_manual(values = c(
+    "All Ages" = "yellowgreen",              
+    "Children Under Five" = "lightpink"   
+  )) +
+  
+  labs(
+    title = "Proportion of Diarrhea Health Services by Age Group",
+    fill = "Age Group"
+  ) +
+  
+  theme_void() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0.7),
+    legend.position = "right",
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 9)
+  )
+```
+
+Interpretasi :
+  
+Gambar dari hasil visualisasi diatas menunjukkan bahwa pelayanan kesehatan pada kelompok semua umur mendominasi dengan proporsi sebesar 77,4%, sedangkan pelayanan pada kelompok balita sebesar 22,6%. Hal ini menunjukkan bahwa program kesehatan lebih banyak menjangkau populasi umum. Namun demikian, kelompok balita tetap merupakan kelompok yang rentan terhadap diare akibat sistem kekebalan tubuh yang belum berkembang secara optimal. Oleh karena itu, meskipun proporsi pelayanannya lebih kecil, intervensi pada kelompok balita tetap memiliki peran yang sangat penting dalam menurunkan angka kesakitan serta mencegah komplikasi yang lebih serius.
+
+### Kesimpulan 
+
+Hasil penelitian menunjukkan kejadian diare di Kabupaten Bojonegoro tahun 2024 masih tergolong tinggi dengan total 13.068 kasus dari populasi 1,36 juta jiwa. Distribusi kasus menunjukkan variasi yang signifikan antar kecamatan, yang mencerminkan perbedaan tingkat risiko dan beban penyakit. Analisis prevalensi menunjukkan bahwa wilayah seperti Kedewan dan Ngambon memiliki tingkat risiko tertinggi, sedangkan Temayang terendah. Hal ini menegaskan bahwa jumlah kasus absolut saja tidak cukup, sehingga prevalensi menjadi ukuran yang lebih representatif dalam menggambarkan risiko penyakit. Secara keseluruhan, diare masih menjadi masalah kesehatan masyarakat yang signifikan, sehingga diperlukan pendekatan berbasis data untuk mendukung intervensi yang lebih tepat sasaran.
+
+### References
+
+[1] https://data.bojonegorokab.go.id/dinas-kesehatan.html@detail=morbiditas
+
+[2] https://dinkes.bojonegorokab.go.id/menu/detail/21/ProfilKesehatan
