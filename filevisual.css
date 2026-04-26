@@ -1,0 +1,22 @@
+/* === CODE BLOCK (WARNA TETAP HIDUP) === */
+pre {
+  background-color: #fffaf0; /* cream soft */
+  border: 2px solid #f59e0b; /* orange */
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+  overflow-x: auto;
+}
+
+/* JANGAN override warna syntax */
+pre code {
+  background: none !important;
+}
+
+/* inline code */
+p code {
+  background-color: #ffe4e6;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: #be123c;
+}
