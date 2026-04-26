@@ -24,6 +24,7 @@ B. Tujuan
 - Mengidentifikasi perbedaan risiko antar wilayah  
 - Memberikan insight berbasis data untuk intervensi kesehatan  
 
+---
 
 C. Dataset
 - **Sumber:** Dinas Kesehatan Kabupaten Bojonegoro  
@@ -56,12 +57,13 @@ E. Metode Analisis
 
 F. Output
 <p align="center">
-  👉 <a href="http://rpubs.com/kaeyla_3/1426080"><b>Lihat selengkapnya di RPubs</b></a>
+  👉 <a href="http://rpubs.com/kaeyla_3/1426080"><b>Lihat selengkapnya</b></a>
 </p>
 
 ---
 
 G. Kesimpulan
+
 Kejadian diare di Kabupaten Bojonegoro tahun 2024 masih tergolong tinggi dengan total 13.068 kasus dan menunjukkan variasi yang signifikan antar kecamatan.Dan pada Hasil analisis menegaskan bahwa prevalensi lebih representatif dibanding jumlah kasus absolut dalam menggambarkan risiko penyakit, sehingga diperlukan pendekatan berbasis data untuk intervensi yang lebih tepat sasaran.
 
 ---
